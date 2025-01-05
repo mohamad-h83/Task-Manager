@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./public/css/main.css" />
+    <title>taskmanager</title>
+  </head>
+  <body class="Total">
+    <div class="task">
+      <form action="" class="form" id="myform">
+        <h1>taskmaneger</h1>
+        <div><label for="title">title:</label></div>
+        <input
+          id="title"
+          type="text"
+          name="title"
+          placeholder="Enter title your task"
+          value=""
+        />
+        <div><label for="description">description:</label></div>
+        <div>
+          <input
+            id="description"
+            type="text"
+            name="description"
+            placeholder="Enter description your task"
+          />
+        </div>
+        <div><label for="completed">completed:</label></div>
+        <select id="completed" name="completed">
+          <option value="false">false</option>
+          <option value="true">true</option>
+        </select>
+        <div><label for="dueDate">dueDate:</label></div>
+        <div>
+          <input
+            id="dueDate"
+            type="text"
+            name="dueDate"
+            placeholder="Enter dueDate your task"
+          />
+        </div>
+        <button type="submit" id="save">Save task</button>
+      </form>
+    </div>
+    <script type="module" src="./public/js/main.js">
+    </script>
+  </body>
+</html>
