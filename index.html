@@ -28,10 +28,9 @@
           />
         </div>
         <div><label for="completed">completed:</label></div>
-        <select id="completed" name="completed">
-          <option value="false">false</option>
-          <option value="true">true</option>
-        </select>
+        <input type="checkbox" id="completed" name="completed"class="completed" />true
+        <input type="checkbox" id="uncompleted" name="completed"class="completed" />false
+
         <div><label for="dueDate">dueDate:</label></div>
         <div>
           <input
@@ -44,7 +43,6 @@
         <button type="submit" id="save">Save task</button>
       </form>
     </div>
-    <script type="module" src="./public/js/main.js">
-    </script>
+    <script type="module" src="./public/js/main.js"></script>
   </body>
 </html>
