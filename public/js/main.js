@@ -30,5 +30,21 @@ form.addEventListener("submit", function (event) {
     catch (error) {
         console.error("Error", error.message);
     }
+    function completedtask(tasktitle) {
+        var taskfound = false;
+        for (var i = 0; i < userinputs.length; i++) {
+            if (userinputs[i].title === tasktitle) {
+                userinputs[i].completed === true;
+                taskfound = true;
+                console.log("Task with title \"".concat(tasktitle, "\" marked as completed"));
+                break;
+            }
+        }
+        if (!taskfound) {
+            console.log("Task with title \"".concat(tasktitle, "\" not found"));
+        }
+    }
+    completedtask(title.value);
 });
+
 
