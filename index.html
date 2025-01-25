@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module">
+      import { z } from 'https://cdn.jsdelivr.net/npm/zod@3.11.6/+esm';
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
     <link rel="stylesheet" href="./public/css/main.css" />
     <title>taskmanager</title>
   </head>
@@ -27,8 +31,18 @@
           />
         </div>
         <div><label for="completed">completed:</label></div>
-        <input type="checkbox" id="completed" name="completed"class="completed" />true
-        <input type="checkbox" id="uncompleted" name="completed"class="completed" />false
+        <input
+          type="checkbox"
+          id="completed"
+          name="completed"
+          class="completed"
+        />true
+        <input
+          type="checkbox"
+          id="uncompleted"
+          name="completed"
+          class="completed"
+        />false
 
         <div><label for="dueDate">dueDate:</label></div>
         <div>
@@ -40,9 +54,26 @@
           />
         </div>
         <button type="submit" id="save">Save task</button>
-        
       </form>
     </div>
+
+
+    <div class="handlebar">
+      <div id="task-container" class="task-container"></div>
+    </div>
+
+    <script id="task-template" type="text/x-handlebars-template">
+      {{#each tasks}}
+        <div class="task-item">
+          <h3>{{title}}</h3>
+          <p>{{description}}</p>
+          <p><strong>Status:</strong>
+            {{#if completed}}Completed{{else}}Uncompleted{{/if}}</p>
+          <p><strong>Due Date:</strong> {{dueDate}}</p>
+        </div>
+      {{/each}}
+    </script>
+
     <script type="module" src="./public/js/main.js"></script>
   </body>
 </html>
