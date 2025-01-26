@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module">
-      import { z } from 'https://cdn.jsdelivr.net/npm/zod@3.11.6/+esm';
+      import { z } from "https://cdn.jsdelivr.net/npm/zod@3.11.6/+esm";
     </script>
     <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
     <link rel="stylesheet" href="./public/css/main.css" />
@@ -14,14 +14,14 @@
     <div class="task">
       <form action="" class="form" id="myform">
         <h1>taskmaneger</h1>
-        <div><label for="title">title:</label></div>
+        <label for="title">title:</label><br />
         <input
           id="title"
           type="text"
           name="title"
           placeholder="Enter title your task"
-        />
-        <div><label for="description">description:</label></div>
+        /><br />
+        <label for="description">description:</label><br />
         <div>
           <input
             id="description"
@@ -30,7 +30,7 @@
             placeholder="Enter description your task"
           />
         </div>
-        <div><label for="completed">completed:</label></div>
+        <label for="completed">completed:</label><br />
         <input
           type="checkbox"
           id="completed"
@@ -42,9 +42,9 @@
           id="uncompleted"
           name="completed"
           class="completed"
-        />false
+        />false <br />
 
-        <div><label for="dueDate">dueDate:</label></div>
+        <label for="dueDate">dueDate:</label><br />
         <div>
           <input
             id="dueDate"
@@ -53,10 +53,16 @@
             placeholder="Enter dueDate your task"
           />
         </div>
+        <label for="priority">Priority:</label><br />
+        <input
+          type="text"
+          id="priority"
+          name="priority"
+          placeholder="Enter priority (optional)"
+        /><br />
         <button type="submit" id="save">Save task</button>
       </form>
     </div>
-
 
     <div class="handlebar">
       <div id="task-container" class="task-container"></div>
@@ -70,6 +76,7 @@
           <p><strong>Status:</strong>
             {{#if completed}}Completed{{else}}Uncompleted{{/if}}</p>
           <p><strong>Due Date:</strong> {{dueDate}}</p>
+          <p>{{#if priority}}Priority: {{priority}}{{/if}}</p>
         </div>
       {{/each}}
     </script>
