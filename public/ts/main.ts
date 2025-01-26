@@ -7,21 +7,56 @@ const taskSchema = z.object({
   completed: z.boolean(),
   dueDate: z.string().min(1, "Due date must be a valid date"),
 });
-
-let userinputs: {
+class RegularTask {
   title: string;
   description: string;
   completed: boolean;
   dueDate: string;
-}[] = [];
+
+  constructor(
+    title: string,
+    description: string,
+    completed: boolean,
+    dueDate: string
+  ) {
+    this.title = title;
+    this.description = description;
+    this.completed = completed;
+    this.dueDate = dueDate;
+  }
+  getDetails(): string {
+    return `title:${this.title} ,description :${this.description}, completed:${this.completed},dueDate:${this.dueDate}`;
+  }
+}
+
+class PriorityTask extends RegularTask {
+  priority: string;
+  constructor(
+    title: string,
+    description: string,
+    completed: boolean,
+    dueDate: string,
+    priority: string
+  ) {
+    super(title, description, completed, dueDate);
+    this.priority = priority;
+  }
+  getDetails(): string {
+    return `${super.getDetails()}, priority:${this.priority}`;
+  }
+}
+let userinputs: RegularTask[] = [];
 
 const form = document.getElementById("myform") as HTMLFormElement;
 const title = document.getElementById("title") as HTMLInputElement;
 const description = document.getElementById("description") as HTMLInputElement;
 const completed = document.getElementById("completed") as HTMLInputElement;
 const dueDate = document.getElementById("dueDate") as HTMLInputElement;
+const priority = document.getElementById("priority") as HTMLInputElement;
 
-const taskTemplate = document.getElementById("task-template") as HTMLScriptElement;
+const taskTemplate = document.getElementById(
+  "task-template"
+) as HTMLScriptElement;
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -29,34 +64,43 @@ form.addEventListener("submit", (event) => {
     if (!title.value.trim() || !description.value.trim()) {
       throw new Error("Title and Description cannot be empty!");
     }
-    const userinput = {
-      title: title.value,
-      description: description.value,
-      completed: completed.checked,
-      dueDate: dueDate.value,
-    };
 
-    taskSchema.parse(userinput);
+    let userinput;
+
+    if (priority.value.trim()) {
+      userinput = new PriorityTask(
+        title.value,
+        description.value,
+        completed.checked,
+        dueDate.value,
+        priority.value
+      );
+    } else {
+      userinput = new RegularTask(
+        title.value,
+        description.value,
+        completed.checked,
+        dueDate.value
+      );
+    }
+
+    taskSchema.parse({
+      title: userinput.title,
+      description: userinput.description,
+      completed: userinput.completed,
+      dueDate: userinput.dueDate,
+    });
 
     userinputs.push(userinput);
 
     const source = taskTemplate.innerHTML;
     console.log(source);
-    
     const template = Handlebars.compile(source);
     const html = template({ tasks: userinputs });
     document.getElementById("task-container")!.innerHTML = html;
 
-    userinputs.forEach((userinput) => {
-      if (userinput.completed) {
-        console.log(
-          `Completed task: title: ${userinput.title} - description: ${userinput.description} - Completed: ${userinput.completed} - Due Date: ${userinput.dueDate}`
-        );
-      } else {
-        console.log(
-          `Uncompleted task: title: ${userinput.title} - description: ${userinput.description} - Completed: ${userinput.completed} - Due Date: ${userinput.dueDate}`
-        );
-      }
+    userinputs.forEach((task) => {
+      console.log(task.getDetails());
     });
     console.log("Task added successfully!");
   } catch (error: any) {
@@ -77,7 +121,5 @@ form.addEventListener("submit", (event) => {
       console.log(`Task with title "${tasktitle}" not found`);
     }
   }
-
   completedtask(title.value);
 });
-
