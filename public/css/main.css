@@ -57,3 +57,17 @@
   margin-top: 10px;
   margin-bottom: 10px;
 }
+.delete{
+  width: 70px;
+  height: 25px;
+  background: #2b2b2b;
+  color: aqua;
+  border-radius: 5px;
+}
+.edit{
+  width: 50px;
+  height: 25px;
+  background: #2b2b2b;
+  color: aqua;
+  border-radius: 5px;
+}
