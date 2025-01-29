@@ -31,26 +31,17 @@
           />
         </div>
         <label for="completed">completed:</label><br />
-        <input
-          type="checkbox"
-          id="completed"
-          name="completed"
-          class="completed"
-        />true
-        <input
-          type="checkbox"
-          id="uncompleted"
-          name="completed"
-          class="completed"
-        />false <br />
+        <input type="radio"id="completed" name="completed"class="completed" value="completed">completed
+        <input type="radio"id="completed" name="completed"class="completed" value="uncompleted">uncompleted <br>
 
         <label for="dueDate">dueDate:</label><br />
         <div>
           <input
             id="dueDate"
-            type="text"
+            type="date"
             name="dueDate"
             placeholder="Enter dueDate your task"
+            class="dueDate"
           />
         </div>
         <label for="priority">Priority:</label><br />
@@ -77,6 +68,8 @@
             {{#if completed}}Completed{{else}}Uncompleted{{/if}}</p>
           <p><strong>Due Date:</strong> {{dueDate}}</p>
           <p>{{#if priority}}Priority: {{priority}}{{/if}}</p>
+          <button class="edit" data-title="{{title}}">Edit</button>
+          <button class="delete" data-title="{{title}}">Delete</button>
         </div>
       {{/each}}
     </script>
