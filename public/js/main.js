@@ -13,12 +13,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-import { z } from 'https://cdn.jsdelivr.net/npm/zod@3.11.6/+esm'
+import { z } from "https://cdn.jsdelivr.net/npm/zod@3.11.6/+esm"
 var taskSchema = z.object({
     title: z.string().min(1, "Title cannot be empty!"),
     description: z.string().min(1, "Description cannot be empty!"),
     completed: z.boolean(),
-    dueDate: z.string().min(1, "Due date must be a valid date"),
+    dueDate: z.instanceof(Date).refine(function (date) { return !isNaN(date.getTime()); }, "Due date must be a valid date"),
 });
 var RegularTask = /** @class */ (function () {
     function RegularTask(title, description, completed, dueDate) {
@@ -58,12 +58,18 @@ form.addEventListener("submit", function (event) {
         if (!title.value.trim() || !description.value.trim()) {
             throw new Error("Title and Description cannot be empty!");
         }
+        var dueDatevalue = new Date(dueDate.value);
+        var currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        if (dueDatevalue > currentDate) {
+            throw new Error("Due date cannot be in the future!");
+        }
         var userinput = void 0;
         if (priority.value.trim()) {
-            userinput = new PriorityTask(title.value, description.value, completed.checked, dueDate.value, priority.value);
+            userinput = new PriorityTask(title.value, description.value, completed.checked, dueDatevalue, priority.value);
         }
         else {
-            userinput = new RegularTask(title.value, description.value, completed.checked, dueDate.value);
+            userinput = new RegularTask(title.value, description.value, completed.checked, dueDatevalue);
         }
         taskSchema.parse({
             title: userinput.title,
@@ -72,32 +78,54 @@ form.addEventListener("submit", function (event) {
             dueDate: userinput.dueDate,
         });
         userinputs.push(userinput);
-        var source = taskTemplate.innerHTML;
-        console.log(source);
-        var template = Handlebars.default.compile(source);
-        var html = template({ tasks: userinputs });
-        document.getElementById("task-container").innerHTML = html;
-        userinputs.forEach(function (task) {
-            console.log(task.getDetails());
-        });
+        updateTaskList();
+        form.reset();
         console.log("Task added successfully!");
     }
     catch (error) {
         console.error("Error:", error.message);
     }
-    function completedtask(tasktitle) {
-        var taskfound = false;
-        for (var i = 0; i < userinputs.length; i++) {
-            if (userinputs[i].title === tasktitle) {
-                userinputs[i].completed = true;
-                taskfound = true;
-                console.log("Task with title \"".concat(tasktitle, "\" marked as completed"));
-                break;
-            }
-        }
-        if (!taskfound) {
-            console.log("Task with title \"".concat(tasktitle, "\" not found"));
-        }
-    }
-    completedtask(title.value);
 });
+function completedtask() {
+    var currentDate = new Date();
+    var overdueTasks = userinputs.filter(function (task) { return task.dueDate < currentDate && !task.completed; });
+    var completed = userinputs.filter(function (task) { return task.completed; });
+    var uncompleted = userinputs.filter(function (task) { return !task.completed; });
+    var completedTasks = completed.map(function (task) { return task.title; });
+    var uncompletedTasks = uncompleted.map(function (task) { return task.title; });
+    var overdueTaskTitles = overdueTasks.map(function (task) { return task.title; });
+    console.log("completed Tasks:", completedTasks);
+    console.log("uncompleted Tasks:", uncompletedTasks);
+    console.log("overdue Tasks:", overdueTaskTitles);
+}
+function updateTaskList() {
+    var source = taskTemplate.innerHTML;
+    var template = Handlebars.default.compile(source);
+    var html = template({ tasks: userinputs });
+    document.getElementById("task-container").innerHTML = html;
+    var editButtons = document.querySelectorAll(".edit");
+    var deleteButtons = document.querySelectorAll(".delete");
+    editButtons.forEach(function (button) {
+        button.addEventListener("click", function (event) {
+            var taskTitle = event.target.dataset.title;
+            var taskToEdit = userinputs.find(function (task) { return task.title === taskTitle; });
+            if (taskToEdit) {
+                title.value = taskToEdit.title;
+                description.value = taskToEdit.description;
+                completed.checked = taskToEdit.completed;
+                dueDate.value = taskToEdit.dueDate.toISOString().split('T')[0];
+                priority.value = taskToEdit.priority || "";
+                userinputs = userinputs.filter(function (task) { return task.title !== taskTitle; });
+            }
+        });
+    });
+    deleteButtons.forEach(function (button) {
+        button.addEventListener("click", function (event) {
+            var taskTitle = event.target.dataset.title;
+            userinputs = userinputs.filter(function (task) { return task.title !== taskTitle; });
+            updateTaskList();
+            console.log("Task with title \"".concat(taskTitle, "\" deleted."));
+        });
+    });
+    completedtask();
+}
