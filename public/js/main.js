@@ -18,7 +18,8 @@ var taskSchema = z.object({
     title: z.string().min(1, "Title cannot be empty!"),
     description: z.string().min(1, "Description cannot be empty!"),
     completed: z.boolean(),
-    dueDate: z.instanceof(Date).refine(function (date) { return !isNaN(date.getTime()); }, "Due date must be a valid date"),
+    dueDate: z.instanceof(Date)
+        .refine(function (date) { return !isNaN(date.getTime()); }, "Due date must be a valid date"),
 });
 var RegularTask = /** @class */ (function () {
     function RegularTask(title, description, completed, dueDate) {
@@ -45,6 +46,28 @@ var PriorityTask = /** @class */ (function (_super) {
     return PriorityTask;
 }(RegularTask));
 var userinputs = [];
+var loadTasksFromLocalStorage = function () {
+    var sevetasks = localStorage.getItem("tasks");
+    if (sevetasks) {
+        try {
+            userinputs = JSON.parse(sevetasks).map(function (task) {
+                if (task.priority) {
+                    return new PriorityTask(task.title, task.description, task.completed, new Date(task.dueDate), task.priority);
+                }
+                else {
+                    return new RegularTask(task.title, task.description, task.completed, new Date(task.dueDate));
+                }
+            });
+        }
+        catch (error) {
+            console.error("Error parsing tasks from local storage:", error);
+        }
+    }
+};
+var saveTasksToLocalStorage = function () {
+    var tasksJson = JSON.stringify(userinputs);
+    localStorage.setItem("tasks", tasksJson);
+};
 var form = document.getElementById("myform");
 var title = document.getElementById("title");
 var description = document.getElementById("description");
@@ -78,6 +101,7 @@ form.addEventListener("submit", function (event) {
             dueDate: userinput.dueDate,
         });
         userinputs.push(userinput);
+        saveTasksToLocalStorage();
         updateTaskList();
         form.reset();
         console.log("Task added successfully!");
@@ -113,7 +137,7 @@ function updateTaskList() {
                 title.value = taskToEdit.title;
                 description.value = taskToEdit.description;
                 completed.checked = taskToEdit.completed;
-                dueDate.value = taskToEdit.dueDate.toISOString().split('T')[0];
+                dueDate.value = taskToEdit.dueDate.toISOString().split("T")[0];
                 priority.value = taskToEdit.priority || "";
                 userinputs = userinputs.filter(function (task) { return task.title !== taskTitle; });
             }
@@ -123,9 +147,11 @@ function updateTaskList() {
         button.addEventListener("click", function (event) {
             var taskTitle = event.target.dataset.title;
             userinputs = userinputs.filter(function (task) { return task.title !== taskTitle; });
+            saveTasksToLocalStorage();
             updateTaskList();
             console.log("Task with title \"".concat(taskTitle, "\" deleted."));
         });
     });
     completedtask();
 }
+loadTasksFromLocalStorage();
