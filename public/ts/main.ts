@@ -5,19 +5,19 @@ const taskSchema = z.object({
   title: z.string().min(1, "Title cannot be empty!"),
   description: z.string().min(1, "Description cannot be empty!"),
   completed: z.boolean(),
-  dueDate: z.string().min(1, "Due date must be a valid date"),
+  dueDate: z.instanceof(Date).refine(date => !isNaN(date.getTime()), "Due date must be a valid date"),
 });
 class RegularTask {
   title: string;
   description: string;
   completed: boolean;
-  dueDate: string;
+  dueDate: Date;
 
   constructor(
     title: string,
     description: string,
     completed: boolean,
-    dueDate: string
+    dueDate: Date,
   ) {
     this.title = title;
     this.description = description;
@@ -35,8 +35,8 @@ class PriorityTask extends RegularTask {
     title: string,
     description: string,
     completed: boolean,
-    dueDate: string,
-    priority: string
+    dueDate: Date,
+    priority: string,
   ) {
     super(title, description, completed, dueDate);
     this.priority = priority;
@@ -65,14 +65,22 @@ form.addEventListener("submit", (event) => {
       throw new Error("Title and Description cannot be empty!");
     }
 
-    let userinput;
+    const dueDatevalue = new Date(dueDate.value);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
 
+    if (dueDatevalue > currentDate) {
+      throw new Error("Due date cannot be in the future!");
+    }
+
+    let userinput;
+    
     if (priority.value.trim()) {
       userinput = new PriorityTask(
         title.value,
         description.value,
         completed.checked,
-        dueDate.value,
+        dueDatevalue,
         priority.value
       );
     } else {
@@ -80,7 +88,7 @@ form.addEventListener("submit", (event) => {
         title.value,
         description.value,
         completed.checked,
-        dueDate.value
+        dueDatevalue,
       );
     }
 
@@ -93,33 +101,62 @@ form.addEventListener("submit", (event) => {
 
     userinputs.push(userinput);
 
-    const source = taskTemplate.innerHTML;
-    console.log(source);
-    const template = Handlebars.compile(source);
-    const html = template({ tasks: userinputs });
-    document.getElementById("task-container")!.innerHTML = html;
-
-    userinputs.forEach((task) => {
-      console.log(task.getDetails());
-    });
+    updateTaskList();
+    form.reset(); 
     console.log("Task added successfully!");
   } catch (error: any) {
     console.error("Error:", error.message);
   }
-
-  function completedtask(tasktitle: string) {
-    let taskfound = false;
-    for (let i = 0; i < userinputs.length; i++) {
-      if (userinputs[i].title === tasktitle) {
-        userinputs[i].completed = true;
-        taskfound = true;
-        console.log(`Task with title "${tasktitle}" marked as completed`);
-        break;
-      }
-    }
-    if (!taskfound) {
-      console.log(`Task with title "${tasktitle}" not found`);
-    }
-  }
-  completedtask(title.value);
 });
+function completedtask(){
+  const currentDate = new Date();
+  const overdueTasks = userinputs.filter(
+   (task) => task.dueDate < currentDate && !task.completed
+  );
+  const completed = userinputs.filter(task=>task.completed);
+  const uncompleted = userinputs.filter(task=>!task.completed);
+
+  const completedTasks = completed.map(task => task.title);
+  const uncompletedTasks = uncompleted.map(task => task.title);
+  const overdueTaskTitles = overdueTasks.map(task=>task.title);
+
+  console.log("completed Tasks:",completedTasks);
+  console.log("uncompleted Tasks:",uncompletedTasks);
+  console.log("overdue Tasks:", overdueTaskTitles);
+  
+  
+}
+
+function updateTaskList() {
+  const source = taskTemplate.innerHTML;
+  const template = Handlebars.compile(source);
+  const html = template({ tasks: userinputs });
+  document.getElementById("task-container")!.innerHTML = html;
+  const editButtons = document.querySelectorAll(".edit");
+  const deleteButtons = document.querySelectorAll(".delete");
+
+  editButtons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      const taskTitle = (event.target as HTMLButtonElement).dataset.title;
+      const taskToEdit = userinputs.find((task) => task.title === taskTitle);
+      if (taskToEdit) {
+        title.value = taskToEdit.title;
+        description.value = taskToEdit.description;
+        completed.checked = taskToEdit.completed;
+        dueDate.value = taskToEdit.dueDate.toISOString().split('T')[0];
+        priority.value = (taskToEdit as PriorityTask).priority || "";
+        userinputs = userinputs.filter((task) => task.title !== taskTitle);
+      }
+    });
+  });
+
+  deleteButtons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      const taskTitle = (event.target as HTMLButtonElement).dataset.title;
+      userinputs = userinputs.filter((task) => task.title !== taskTitle);
+      updateTaskList(); 
+      console.log(`Task with title "${taskTitle}" deleted.`);
+    });
+  });
+  completedtask()
+}
