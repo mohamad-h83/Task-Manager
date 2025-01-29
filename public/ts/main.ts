@@ -1,11 +1,13 @@
 import { z } from "zod";
-import Handlebars from "handlebars";
+import Handlebars, { log } from "handlebars";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title cannot be empty!"),
   description: z.string().min(1, "Description cannot be empty!"),
   completed: z.boolean(),
-  dueDate: z.instanceof(Date).refine(date => !isNaN(date.getTime()), "Due date must be a valid date"),
+  dueDate: z
+    .instanceof(Date)
+    .refine((date) => !isNaN(date.getTime()), "Due date must be a valid date"),
 });
 class RegularTask {
   title: string;
@@ -17,7 +19,7 @@ class RegularTask {
     title: string,
     description: string,
     completed: boolean,
-    dueDate: Date,
+    dueDate: Date
   ) {
     this.title = title;
     this.description = description;
@@ -36,7 +38,7 @@ class PriorityTask extends RegularTask {
     description: string,
     completed: boolean,
     dueDate: Date,
-    priority: string,
+    priority: string
   ) {
     super(title, description, completed, dueDate);
     this.priority = priority;
@@ -46,6 +48,40 @@ class PriorityTask extends RegularTask {
   }
 }
 let userinputs: RegularTask[] = [];
+
+const loadTasksFromLocalStorage = () => {
+  const sevetasks = localStorage.getItem("tasks");
+  if (sevetasks) {
+    try {
+      userinputs = JSON.parse(sevetasks).map((task: any) => {
+        if (task.priority) {
+          return new PriorityTask(
+            task.title,
+            task.description,
+            task.completed,
+            new Date(task.dueDate),
+            task.priority
+          );
+        } else {
+          return new RegularTask(
+            task.title,
+            task.description,
+            task.completed,
+            new Date(task.dueDate)
+          );
+        }
+      });
+    } catch (error) {
+      console.error("Error parsing tasks from local storage:", error);
+    }
+  }
+};
+
+const saveTasksToLocalStorage = ()=>{
+ const tasksJson= JSON.stringify(userinputs);
+ localStorage.setItem("tasks",tasksJson);
+
+};
 
 const form = document.getElementById("myform") as HTMLFormElement;
 const title = document.getElementById("title") as HTMLInputElement;
@@ -74,7 +110,7 @@ form.addEventListener("submit", (event) => {
     }
 
     let userinput;
-    
+
     if (priority.value.trim()) {
       userinput = new PriorityTask(
         title.value,
@@ -88,7 +124,7 @@ form.addEventListener("submit", (event) => {
         title.value,
         description.value,
         completed.checked,
-        dueDatevalue,
+        dueDatevalue
       );
     }
 
@@ -101,30 +137,30 @@ form.addEventListener("submit", (event) => {
 
     userinputs.push(userinput);
 
+    saveTasksToLocalStorage();
+
     updateTaskList();
-    form.reset(); 
+    form.reset();
     console.log("Task added successfully!");
   } catch (error: any) {
     console.error("Error:", error.message);
   }
 });
-function completedtask(){
+function completedtask() {
   const currentDate = new Date();
   const overdueTasks = userinputs.filter(
-   (task) => task.dueDate < currentDate && !task.completed
+    (task) => task.dueDate < currentDate && !task.completed
   );
-  const completed = userinputs.filter(task=>task.completed);
-  const uncompleted = userinputs.filter(task=>!task.completed);
+  const completed = userinputs.filter((task) => task.completed);
+  const uncompleted = userinputs.filter((task) => !task.completed);
 
-  const completedTasks = completed.map(task => task.title);
-  const uncompletedTasks = uncompleted.map(task => task.title);
-  const overdueTaskTitles = overdueTasks.map(task=>task.title);
+  const completedTasks = completed.map((task) => task.title);
+  const uncompletedTasks = uncompleted.map((task) => task.title);
+  const overdueTaskTitles = overdueTasks.map((task) => task.title);
 
-  console.log("completed Tasks:",completedTasks);
-  console.log("uncompleted Tasks:",uncompletedTasks);
+  console.log("completed Tasks:", completedTasks);
+  console.log("uncompleted Tasks:", uncompletedTasks);
   console.log("overdue Tasks:", overdueTaskTitles);
-  
-  
 }
 
 function updateTaskList() {
@@ -143,7 +179,7 @@ function updateTaskList() {
         title.value = taskToEdit.title;
         description.value = taskToEdit.description;
         completed.checked = taskToEdit.completed;
-        dueDate.value = taskToEdit.dueDate.toISOString().split('T')[0];
+        dueDate.value = taskToEdit.dueDate.toISOString().split("T")[0];
         priority.value = (taskToEdit as PriorityTask).priority || "";
         userinputs = userinputs.filter((task) => task.title !== taskTitle);
       }
@@ -154,9 +190,11 @@ function updateTaskList() {
     button.addEventListener("click", (event) => {
       const taskTitle = (event.target as HTMLButtonElement).dataset.title;
       userinputs = userinputs.filter((task) => task.title !== taskTitle);
-      updateTaskList(); 
+      saveTasksToLocalStorage();
+      updateTaskList();
       console.log(`Task with title "${taskTitle}" deleted.`);
     });
   });
-  completedtask()
+  completedtask();
 }
+loadTasksFromLocalStorage();
